@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ResumeMatch – Resume and Job Description Analyzer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f6f8;--surface:#fff;--ink:#18202f;--head:#0f1b33;--muted:#586174;--line:#e2e5ea;
+  --accent:#1d4ed8;--btn:#1d4ed8;--accent-soft:#e8eefc;
+  --match:#17794f;--match-bg:#e3f4ec;--gap:#a9600c;--gap-bg:#fbefdc;--bad:#b8323a;--bad-bg:#fbe5e6;
+  --extra:#4a5365;--extra-bg:#eceef2;--track:#e7eaf0;--shadow:0 1px 2px rgba(15,27,51,.05),0 6px 20px rgba(15,27,51,.06)}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0e131c;--surface:#151c28;--ink:#e8ecf3;--head:#f1f4f9;--muted:#9aa5b8;--line:#263043;
+  --accent:#7ea3ff;--btn:#3b6df0;--accent-soft:#1b2745;
+  --match:#5fd3a0;--match-bg:#12332a;--gap:#f2b45c;--gap-bg:#392b14;--bad:#ff8d94;--bad-bg:#3f1e21;
+  --extra:#b4bdd0;--extra-bg:#222b3b;--track:#263043;--shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.3)}}
+*{box-sizing:border-box}
+html{color-scheme:light dark;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.6}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 1.25rem}
+[hidden]{display:none!important}
+h1,h2,h3{color:var(--head)}
+
+/* Top bar */
+.top{background:var(--surface);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;justify-content:space-between;align-items:center;height:64px}
+.brand{display:flex;align-items:center;gap:.6rem;font-weight:700;font-size:1.1rem;color:var(--head)}
+.logo{width:32px;height:32px;border-radius:8px;background:var(--btn);display:grid;place-items:center}
+.top nav a{margin-left:1.6rem;color:var(--muted);text-decoration:none;font-weight:500;font-size:.95rem}
+.top nav a:hover{color:var(--accent)}
+
+/* Intro + form */
+.intro{padding:3.5rem 0 3rem}
+.ig{display:grid;grid-template-columns:1fr 1.1fr;gap:3.5rem;align-items:start}
+.intro h1{font-size:clamp(1.9rem,3.6vw,2.6rem);line-height:1.15;letter-spacing:-.02em;font-weight:600;margin:.5rem 0 1rem}
+.intro .lede{color:var(--muted);font-size:1.05rem;max-width:48ch;margin:0 0 1.6rem}
+.checks{list-style:none;margin:0;padding:0;display:grid;gap:.8rem}
+.checks li{display:flex;gap:.7rem;align-items:flex-start}
+.checks svg{flex:none;margin-top:.2rem;color:var(--match)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+.form{padding:1.75rem}
+.form h2{margin:0 0 .2rem;font-size:1.2rem;font-weight:600}
+.form>p{margin:0 0 1.3rem;color:var(--muted);font-size:.92rem}
+.lbl{display:block;font-weight:600;font-size:.9rem;margin-bottom:.45rem}
+.drop{display:flex;align-items:center;gap:1rem;padding:1rem 1.1rem;border:1.5px dashed #b9c0cc;border-radius:10px;cursor:pointer;background:var(--bg);transition:border-color .15s,background-color .15s}
+@media (prefers-color-scheme:dark){.drop{border-color:#3a465c}}
+.drop:hover,.drop.on,.drop.has{border-color:var(--accent);background:var(--accent-soft)}
+.drop:focus-within{outline:3px solid var(--accent);outline-offset:2px}
+.drop input{position:absolute;width:1px;height:1px;opacity:0}
+.ic{flex:none;width:42px;height:42px;border-radius:10px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}
+.drop strong{display:block;font-weight:600}.drop small{color:var(--muted)}
+#fname{display:block;color:var(--accent);font-weight:600;word-break:break-all}
+.fld{margin-top:1.15rem}
+textarea{width:100%;min-height:170px;resize:vertical;padding:.8rem .95rem;font:inherit;font-size:.95rem;color:var(--ink);background:var(--surface);border:1px solid #c5cbd6;border-radius:10px}
+@media (prefers-color-scheme:dark){textarea{border-color:#37435a}}
+textarea::placeholder{color:var(--muted)}
+textarea:focus{border-color:var(--accent)}
+.fa{display:flex;align-items:center;gap:1.1rem;margin-top:1.3rem;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:.6rem;font:inherit;font-weight:600;font-size:1rem;color:#fff;background:var(--btn);border:0;border-radius:8px;padding:.8rem 1.8rem;cursor:pointer}
+.btn:hover{filter:brightness(1.1)}.btn[disabled]{opacity:.75;cursor:progress}
+.spin{width:15px;height:15px;border:2.5px solid rgba(255,255,255,.45);border-top-color:#fff;border-radius:50%;animation:sp .8s linear infinite;display:none}
+.btn[disabled] .spin{display:inline-block}
+@keyframes sp{to{transform:rotate(360deg)}}
+.demo{background:none;border:0;font:inherit;font-weight:600;color:var(--accent);cursor:pointer;padding:0}
+.demo:hover{text-decoration:underline}
+.notice{border-radius:8px;padding:.7rem .95rem;margin-bottom:1rem;font-weight:500;font-size:.92rem}
+.notice.err{background:var(--gap-bg);color:var(--gap);border:1px solid var(--gap)}
+.notice.info{background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent)}
+
+/* Results */
+main{padding:1rem 0 2rem}
+.head{display:flex;justify-content:space-between;align-items:end;flex-wrap:wrap;gap:1rem;padding-top:2rem;border-top:1px solid var(--line);margin-bottom:1.3rem}
+.head h2{margin:0;font-size:1.6rem;letter-spacing:-.015em;font-weight:600}
+.head p{margin:.15rem 0 0;color:var(--muted)}
+.again{font:inherit;font-weight:600;font-size:.92rem;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:.5rem 1rem;cursor:pointer}
+.again:hover{border-color:var(--accent);color:var(--accent)}
+.dash{display:grid;grid-template-columns:290px 1fr;gap:1.25rem}
+.gc{padding:1.75rem 1.25rem;text-align:center}
+.gauge{position:relative;width:170px;height:170px;margin:0 auto 1rem}
+.gauge svg{width:100%;height:100%;transform:rotate(-90deg)}
+.gauge .t{stroke:var(--track)}
+.gauge .v{stroke:var(--match);stroke-linecap:round;transition:stroke-dashoffset 1.1s cubic-bezier(.2,.8,.2,1)}
+.gauge.mid .v{stroke:var(--gap)}.gauge.low .v{stroke:var(--bad)}
+.num{position:absolute;inset:0;display:grid;place-content:center;font-size:2.5rem;font-weight:600;letter-spacing:-.03em;line-height:1;color:var(--head)}
+.num small{display:block;font-size:.78rem;font-weight:500;color:var(--muted);letter-spacing:0;margin-top:.35rem}
+.pill{display:inline-block;padding:.25rem .85rem;border-radius:999px;font-weight:600;font-size:.88rem}
+.pill.hi{background:var(--match-bg);color:var(--match)}.pill.mid{background:var(--gap-bg);color:var(--gap)}.pill.low{background:var(--bad-bg);color:var(--bad)}
+.gc p{color:var(--muted);font-size:.92rem;margin:.85rem 0 0}
+.bars{padding:1.5rem 1.75rem}
+.bars h3,.sec h3{margin:0 0 1rem;font-size:1rem;font-weight:600}
+.row{display:grid;grid-template-columns:210px 1fr 54px;align-items:center;gap:.9rem;padding:.7rem 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0}
+.row b{display:block;font-size:.93rem;font-weight:600}.row small{color:var(--muted);font-size:.82rem}
+.bar{height:8px;background:var(--track);border-radius:4px;overflow:hidden}
+.bar span{display:block;height:100%;width:0;background:var(--btn);border-radius:4px;transition:width 1s cubic-bezier(.2,.8,.2,1)}
+.bar.g span{background:var(--match)}
+.val{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.note{color:var(--muted);font-size:.85rem;margin:.6rem 0 0}
+.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-top:1.25rem}
+.sec{padding:1.35rem}
+.sec h3{display:flex;align-items:center;gap:.55rem;margin:0 0 .15rem}
+.sec h3::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--extra)}
+.sec.m h3::before{background:var(--match)}.sec.g h3::before{background:var(--gap)}
+.cnt{margin-left:auto;font-size:.82rem;font-weight:600;border-radius:999px;padding:.05rem .6rem}
+.m .cnt,.m .chip{background:var(--match-bg);color:var(--match)}
+.g .cnt,.g .chip{background:var(--gap-bg);color:var(--gap)}
+.e .cnt,.e .chip{background:var(--extra-bg);color:var(--extra)}
+.sub{color:var(--muted);font-size:.85rem;margin:0 0 .9rem}
+.chips{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:.4rem}
+.chip{padding:.25rem .7rem;border-radius:6px;font-size:.87rem;font-weight:500}
+.empty{color:var(--muted);font-size:.92rem;margin:0}
+.recs{margin-top:2rem}
+.recs h3{font-size:1.2rem;margin:0 0 .2rem;font-weight:600}
+.recs>p{color:var(--muted);margin:0 0 1rem}
+.rg{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;align-items:start}
+details{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+summary{cursor:pointer;padding:.8rem 1.1rem;font-weight:600;list-style:none;display:flex;justify-content:space-between}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font-size:1.25rem;line-height:1;color:var(--accent)}
+details[open] summary::after{content:"\2212"}
+details ul{margin:0;padding:0 1.1rem 1rem 2.4rem;color:var(--muted);font-size:.93rem}
+
+/* How + footer */
+.how{padding:3rem 0 3.5rem;margin-top:2rem;background:var(--surface);border-top:1px solid var(--line)}
+.how h2{font-size:1.5rem;letter-spacing:-.015em;margin:0 0 .3rem;font-weight:600}
+.how .wrap>p{color:var(--muted);margin:0 0 1.8rem;max-width:62ch}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem}
+.feat{border-top:3px solid var(--btn);padding-top:1rem}
+.feat h3{margin:0 0 .4rem;font-size:1.05rem;font-weight:600}
+.feat p{margin:0;color:var(--muted);font-size:.94rem}
+footer{padding:1.6rem 0;color:var(--muted);font-size:.88rem;border-top:1px solid var(--line)}
+footer .wrap{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+footer b{color:var(--ink);font-weight:600}
+
+@media (max-width:900px){
+  .ig,.dash,.cols,.rg,.three{grid-template-columns:1fr}
+  .ig{gap:2rem}.intro{padding-top:2.2rem}
+  .row{grid-template-columns:1fr 52px}.row .bar{grid-column:1/-1;order:3}
+  .top nav a{margin-left:1rem}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation-duration:.01ms!important;scroll-behavior:auto!important}}
+
+/* ---- Polish layer ---- */
+:root{--tint:#e8edfa}
+@media (prefers-color-scheme:dark){:root{--tint:#121b31}}
+.top{position:sticky;top:0;z-index:20;box-shadow:0 4px 18px rgba(15,27,51,.05)}
+.top nav{display:flex;align-items:center;gap:.25rem}
+.top nav a{margin:0;padding:.45rem .85rem;border-radius:8px;transition:background-color .15s}
+.top nav a:hover{background:var(--accent-soft)}
+.top nav a.nb{background:var(--btn);color:#fff;margin-left:.6rem;padding:.5rem 1.1rem;font-weight:600}
+.top nav a.nb:hover{filter:brightness(1.1);background:var(--btn);color:#fff}
+.intro{background:linear-gradient(180deg,var(--tint),var(--bg));padding:4rem 0 3.5rem}
+.intro h1{font-weight:700;font-size:clamp(2rem,3.9vw,2.9rem);letter-spacing:-.025em}
+.checks li{align-items:center}
+.checks .ck{flex:none;width:24px;height:24px;border-radius:50%;background:var(--match-bg);color:var(--match);display:grid;place-items:center}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);margin-top:2rem;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);max-width:520px}
+.facts div{padding:1rem 1.15rem}.facts div+div{border-left:1px solid var(--line)}
+.facts b{display:block;font-size:1.5rem;font-weight:700;color:var(--head);line-height:1.1}
+.facts span{color:var(--muted);font-size:.84rem}
+.form{border-radius:16px;border-top:4px solid var(--btn);padding:2rem;box-shadow:0 2px 4px rgba(15,27,51,.05),0 24px 48px rgba(15,27,51,.11)}
+.step{display:flex;align-items:center;gap:.55rem}
+.step i{font-style:normal;width:22px;height:22px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-size:.78rem;font-weight:700}
+.btn{border-radius:10px;box-shadow:0 6px 16px rgba(29,78,216,.28);transition:transform .15s}
+.btn:hover{transform:translateY(-1px)}
+.card{border-radius:14px}
+.how .feat{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:1.6rem;transition:transform .2s,box-shadow .2s}
+.how .feat:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+.ic2{width:44px;height:44px;border-radius:11px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;margin-bottom:1rem}
+footer{background:#0f1b33;border-top:0;color:#a9b4cc;padding:2rem 0}
+footer b{color:#fff}
+/* @media (max-width:900px){.intro{padding:2.5rem 0 2.5rem}.top nav a:not(.nb){display:none}} */
+@media (max-width:900px){
+    .intro{padding:2.5rem 0 2.5rem}
+
+    .top .wrap{
+        height:auto;
+        min-height:64px;
+        gap:.5rem;
+        flex-wrap:wrap;
+        padding-top:.6rem;
+        padding-bottom:.6rem;
+    }
+
+    .top nav{
+        flex-wrap:wrap;
+        justify-content:flex-end;
+    }
+
+    .top nav a:not(.nb){
+        display:inline-flex;
+    }
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><span class="logo" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M9 14l2 2 4-4"/></svg></span>ResumeMatch</div>
+    <!-- <nav aria-label="Main"><a href="#how">How it works</a><a class="nb" href="#form">Analyze resume</a></nav> -->
+    <nav aria-label="Main">
+    <a href="#how">How it works</a>
+    <a href="/history">Analysis History</a>
+    <a class="nb" href="#form">Analyze resume</a>
+    </nav>
+  </div>
+</header>
+
+<section class="intro">
+  <div class="wrap ig">
+    <div>
+      <h1>Check how well your resume matches a job description</h1>
+      <p class="lede">Upload your resume as a PDF, paste the job posting, and get a match score, a skills gap analysis and study recommendations.</p>
+      <ul class="checks">
+        <li><span class="ck"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg></span><span>Skill match against 40+ common technical and professional skills</span></li>
+        <li><span class="ck"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg></span><span>Keyword and meaning-based similarity scores</span></li>
+        <li><span class="ck"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg></span><span>Practical study tips for every missing skill</span></li>
+        <li><span class="ck"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg></span><span>Your uploaded PDF is processed temporarily; analysis results are saved in your history.</span></li>
+      </ul>
+      <div class="facts">
+        <div><b>3</b><span>scoring methods</span></div>
+        <div><b>40+</b><span>skills recognized</span></div>
+        <div><b>PDF</b><span>resume format</span></div>
+      </div>
+    </div>
+
+    <form class="card form" id="form" action="/analyze" method="post" enctype="multipart/form-data">
+      <h2>Analyze your resume</h2>
+      <p>Takes a few seconds.</p>
+      <div class="notice" id="notice" hidden role="alert"></div>
+      <span class="lbl step" id="rl"><i>1</i>Resume (PDF)</span>
+      <label class="drop" id="drop" for="resume">
+        <input type="file" id="resume" name="resume" accept=".pdf,application/pdf" required aria-labelledby="rl">
+        <span class="ic" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg></span>
+        <span><strong>Choose or drop a PDF</strong><small>Scanned images can’t be read.</small><span id="fname"></span></span>
+      </label>
+      <div class="fld">
+        <label class="lbl step" for="jd"><i>2</i>Job description</label>
+        <textarea id="jd" name="job_description" required placeholder="Paste the full job description here."></textarea>
+      </div>
+      <div class="fa">
+        <button class="btn" id="btn" type="submit"><span class="spin" aria-hidden="true"></span><span id="btxt">Analyze resume</span></button>
+        <button class="demo" id="demo" type="button">See a sample result</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<main class="wrap" id="results" hidden>
+  <div class="head">
+    <div><h2>Match report</h2><p id="summary"></p></div>
+    <button class="again" id="downloadReport" type="button">
+    Download PDF Report
+    </button>
+
+    <button class="again" id="again" type="button">
+    Analyze another resume
+    </button>
+
+  </div>
+  <div class="dash">
+    <section class="card gc" aria-label="Overall match">
+      <div class="gauge" id="gauge" role="img">
+        <svg viewBox="0 0 130 130" aria-hidden="true"><circle class="t" cx="65" cy="65" r="54" fill="none" stroke-width="11"/><circle class="v" id="ring" cx="65" cy="65" r="54" fill="none" stroke-width="11" stroke-dasharray="339.29" stroke-dashoffset="339.29"/></svg>
+        <div class="num"><span id="gnum">0%</span><small id="glabel">skill match</small></div>
+      </div>
+      <span class="pill" id="gpill"></span>
+      <p id="gdesc"></p>
+    </section>
+    <section class="card bars" aria-label="Score breakdown">
+      <h3>Score breakdown</h3>
+      <div class="row"><div><b>Skill match</b><small>Share of the job’s skills on your resume</small></div><div class="bar g"><span id="b-skill"></span></div><span class="val" id="v-skill"></span></div>
+      <div class="row"><div><b>Text similarity</b><small>Average of the two scores below</small></div><div class="bar"><span id="b-text"></span></div><span class="val" id="v-text"></span></div>
+      <div class="row"><div><b>Keyword overlap</b><small>TF-IDF, shared words</small></div><div class="bar"><span id="b-tfidf"></span></div><span class="val" id="v-tfidf"></span></div>
+      <div class="row"><div><b>Meaning overlap</b><small>Semantic similarity of ideas</small></div><div class="bar"><span id="b-sem"></span></div><span class="val" id="v-sem"></span></div>
+      <p class="note">Skill match counts only skills from the app’s built-in list, so use it as a guide, not a verdict.</p>
+      <p class="note" id="noskill" hidden>No known skills were found in this job description, so the gauge shows text similarity instead.</p>
+    </section>
+  </div>
+  <div class="cols">
+    <section class="card sec m"><h3>Skills you have <span class="cnt" id="c-m"></span></h3><p class="sub">In the job and on your resume</p><ul class="chips" id="l-m"></ul></section>
+    <section class="card sec g"><h3>Skills to add <span class="cnt" id="c-g"></span></h3><p class="sub">In the job, missing from your resume</p><ul class="chips" id="l-g"></ul></section>
+    <section class="card sec e"><h3>Additional skills <span class="cnt" id="c-e"></span></h3><p class="sub">On your resume, not requested here</p><ul class="chips" id="l-e"></ul></section>
+  </div>
+  <section class="recs">
+    <h3>How to close the gaps</h3>
+    <p>Open a skill to see what to practice.</p>
+    <div class="rg" id="recs"></div>
+  </section>
+</main>
+
+<section class="how" id="how">
+  <div class="wrap">
+    <h2>How your score is calculated</h2>
+    <p>Three independent checks run on every analysis, so no single signal decides the result.</p>
+    <div class="three">
+      <div class="feat"><span class="ic2" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h9"/></svg></span><h3>Skill match</h3><p>Finds skills such as Python, SQL or Power BI in both documents and lists the ones your resume is missing.</p></div>
+      <div class="feat"><span class="ic2" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span><h3>Keyword overlap</h3><p>TF-IDF measures how many of the job’s important words also appear in your resume.</p></div>
+      <div class="feat"><span class="ic2" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-3 11.2V17h6v-2.8A6 6 0 0 0 12 3z"/><path d="M9 21h6"/></svg></span><h3>Meaning overlap</h3><p>A sentence-embedding model compares ideas, so “built predictive models” still counts toward “machine learning”.</p></div>
+    </div>
+  </div>
+</section>
+
+<footer><div class="wrap"><span><b>ResumeMatch</b> · Resume–Job Matching System</span><span>Built with Python, Flask, scikit-learn, Sentence-Transformers and PyMuPDF</span></div></footer>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var C=339.29, reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var form=$('form'),input=$('resume'),drop=$('drop'),btn=$('btn'),btxt=$('btxt'),notice=$('notice'),res=$('results');
+  var latestAnalysis = null;
+  var latestResumeFilename = "";
+
+  var DEMO={resume_skills:[],job_skills:[],tfidf_similarity:41.8,semantic_similarity:63.4,combined_text_similarity:52.6,
+    matching_skills:["Python","SQL","Pandas","Data Analysis","Excel","Git"],
+    missing_skills:["Power BI","Machine Learning","Statistical Analysis","Data Visualization"],
+    extra_skills:["Flask","HTML","CSS","NumPy","Matplotlib"],skill_match_percentage:60,
+    recommendations:{
+      "Power BI":["Learn data importing and transformation.","Practice creating dashboards and visualizations.","Learn Power Query.","Understand basic DAX formulas."],
+      "Machine Learning":["Learn supervised and unsupervised learning.","Understand regression and classification.","Practice Decision Tree and Random Forest algorithms.","Build a small machine learning project."],
+      "Statistical Analysis":["Understand variance and standard deviation.","Learn correlation and covariance.","Practice hypothesis testing."],
+      "Data Visualization":["Learn different types of charts.","Practice creating visualizations using Matplotlib.","Learn Seaborn for statistical plots."]}};
+  DEMO.job_skills=DEMO.matching_skills.concat(DEMO.missing_skills);
+
+  function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+  function show(msg,kind){notice.textContent=msg;notice.className='notice '+kind;notice.hidden=false}
+  function bar(id,v){$('b-'+id).style.width=Math.max(0,Math.min(v,100))+'%';$('v-'+id).textContent=v+'%'}
+  function chips(id,arr,cid){var ul=$('l-'+id);ul.textContent='';$('c-'+id).textContent=arr.length;
+    if(!arr.length){var p=el('li','empty',id==='g'?'Nothing missing.':'None found.');ul.appendChild(p);return}
+    arr.slice().sort().forEach(function(s){ul.appendChild(el('li','chip',s))})}
+  function count(node,to){if(reduce){node.textContent=to+'%';return}
+    var t0=null;function f(t){if(!t0)t0=t;var p=Math.min((t-t0)/1100,1);node.textContent=Math.round(to*(1-Math.pow(1-p,3)))+'%';if(p<1)requestAnimationFrame(f)}requestAnimationFrame(f)}
+
+  function render(r){
+    var has=r.job_skills.length>0, skill=r.skill_match_percentage, text=r.combined_text_similarity;
+    var main=Math.min(has?skill:text,100), lvl=main>=70?'hi':main>=40?'mid':'low';
+    $('summary').textContent=r.matching_skills.length+' of '+r.job_skills.length+' skills in the job description are on your resume.';
+    var g=$('gauge');g.className='gauge '+(lvl==='mid'?'mid':lvl==='low'?'low':'');g.setAttribute('aria-label',Math.round(main)+' percent match');
+    $('glabel').textContent=has?'skill match':'text match';
+    var pill=$('gpill');pill.className='pill '+lvl;pill.textContent={hi:'Strong match',mid:'Partial match',low:'Low match'}[lvl];
+    $('gdesc').textContent={hi:'Your resume covers most of what this job asks for.',mid:'You have a solid base. Closing a few gaps will help.',low:'Several skills this job asks for are missing from your resume.'}[lvl];
+    $('noskill').hidden=has;
+    bar('skill',skill);bar('text',text);bar('tfidf',r.tfidf_similarity);bar('sem',r.semantic_similarity);
+    chips('m',r.matching_skills);chips('g',r.missing_skills);chips('e',r.extra_skills);
+    var box=$('recs');box.textContent='';
+    var keys=Object.keys(r.recommendations||{});
+    if(!keys.length){box.appendChild(el('p','empty','No skill gaps found. Your resume covers every skill this job lists.'))}
+    keys.forEach(function(k){var d=el('details'),s=el('summary',null,k),u=el('ul');
+      r.recommendations[k].forEach(function(t){u.appendChild(el('li',null,t))});d.appendChild(s);d.appendChild(u);box.appendChild(d)});
+    res.hidden=false;
+    // reset then animate the gauge
+    var ring=$('ring');ring.style.transition='none';ring.style.strokeDashoffset=C;void ring.getBoundingClientRect();ring.style.transition='';
+    requestAnimationFrame(function(){ring.style.strokeDashoffset=C*(1-main/100);count($('gnum'),Math.round(main))});
+    res.scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'});
+  }
+
+  input.addEventListener('change',function(){var f=input.files[0];$('fname').textContent=f?f.name:'';drop.classList.toggle('has',!!f)});
+  ['dragenter','dragover'].forEach(function(e){drop.addEventListener(e,function(ev){ev.preventDefault();drop.classList.add('on')})});
+  ['dragleave','drop'].forEach(function(e){drop.addEventListener(e,function(ev){ev.preventDefault();drop.classList.remove('on')})});
+  drop.addEventListener('drop',function(ev){var f=ev.dataTransfer.files[0];
+    if(f&&/pdf$/i.test(f.name)){var dt=new DataTransfer();dt.items.add(f);input.files=dt.files;input.dispatchEvent(new Event('change'))}
+    else show('Please drop a PDF file.','err')});
+
+  function busy(on){btn.disabled=on;btxt.textContent=on?'Analyzing…':'Analyze resume'}
+
+  form.addEventListener('submit',function(e){
+    e.preventDefault();notice.hidden=true;busy(true);
+    fetch(form.action,{method:'POST',body:new FormData(form),headers:{'Accept':'application/json'}})
+      .then(function(r){return r.json().then(function(j){return{ok:r.ok,j:j}})})
+      .then(function(o){
+
+    if(o.ok && o.j && o.j.skill_match_percentage !== undefined){
+
+        latestAnalysis = o.j;
+
+        latestResumeFilename = input.files[0]
+            ? input.files[0].name
+            : "Resume.pdf";
+
+        render(o.j);
+
+    }
+    else{
+
+        show(
+            (o.j && o.j.error) || 'Something went wrong. Please try again.',
+            'err'
+        );
+
+    }
+
+})
+      .catch(function(){show('Can’t reach the analysis server. Start the Flask app, or use “See a sample result” to preview the layout.','err')})
+      .then(function(){busy(false)});
+  });
+  $('demo').addEventListener('click',function(){notice.hidden=true;render(DEMO)});
+  $('again').addEventListener('click',function(){window.scrollTo({top:0,behavior:reduce?'auto':'smooth'})});
+
+// ==========================================
+// DOWNLOAD PDF ANALYSIS REPORT
+// ==========================================
+
+$('downloadReport').addEventListener('click', function() {
+
+    if (!latestAnalysis) {
+        show(
+            'Please analyze a resume before downloading the report.',
+            'err'
+        );
+        return;
+    }
+
+    var downloadButton = $('downloadReport');
+
+    downloadButton.disabled = true;
+    downloadButton.textContent = 'Generating PDF...';
+
+    fetch('/download-report', {
+
+        method: 'POST',
+
+        headers: {
+            'Content-Type': 'application/json'
+        },
+
+        body: JSON.stringify({
+            resume_filename: latestResumeFilename,
+            results: latestAnalysis
+        })
+
+    })
+
+    .then(async function(response) {
+
+        if (!response.ok) {
+            var errorData = await response.json();
+
+            throw new Error(
+                errorData.error || 'Unable to generate PDF report.'
+            );
+        }
+
+        return response.blob();
+
+    })
+
+    .then(function(blob) {
+
+        var url = URL.createObjectURL(blob);
+
+        var link = document.createElement('a');
+
+        link.href = url;
+        link.download = 'ResumeMatch_Analysis_Report.pdf';
+
+        document.body.appendChild(link);
+
+        link.click();
+
+        link.remove();
+
+        URL.revokeObjectURL(url);
+
+    })
+
+    .catch(function(error) {
+
+        show(error.message, 'err');
+
+    })
+
+    .finally(function() {
+
+        downloadButton.disabled = false;
+
+        downloadButton.textContent = 'Download PDF Report';
+
+    });
+
+});
+
+})();
+</script>
+</body>
+</html>
