@@ -275,9 +275,8 @@ footer b{color:#fff}
     <section class="card bars" aria-label="Score breakdown">
       <h3>Score breakdown</h3>
       <div class="row"><div><b>Skill match</b><small>Share of the job’s skills on your resume</small></div><div class="bar g"><span id="b-skill"></span></div><span class="val" id="v-skill"></span></div>
-      <div class="row"><div><b>Text similarity</b><small>Average of the two scores below</small></div><div class="bar"><span id="b-text"></span></div><span class="val" id="v-text"></span></div>
+      <div class="row"><div><b>Text similarity</b><small>TF-IDF-based text comparison</small></div><div class="bar"><span id="b-text"></span></div><span class="val" id="v-text"></span></div>
       <div class="row"><div><b>Keyword overlap</b><small>TF-IDF, shared words</small></div><div class="bar"><span id="b-tfidf"></span></div><span class="val" id="v-tfidf"></span></div>
-      <div class="row"><div><b>Meaning overlap</b><small>Semantic similarity of ideas</small></div><div class="bar"><span id="b-sem"></span></div><span class="val" id="v-sem"></span></div>
       <p class="note">Skill match counts only skills from the app’s built-in list, so use it as a guide, not a verdict.</p>
       <p class="note" id="noskill" hidden>No known skills were found in this job description, so the gauge shows text similarity instead.</p>
     </section>
@@ -297,11 +296,11 @@ footer b{color:#fff}
 <section class="how" id="how">
   <div class="wrap">
     <h2>How your score is calculated</h2>
-    <p>Three independent checks run on every analysis, so no single signal decides the result.</p>
+    <p>The system checks required skills and compares resume and job-description text to evaluate the match.</p>
     <div class="three">
       <div class="feat"><span class="ic2" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h9"/></svg></span><h3>Skill match</h3><p>Finds skills such as Python, SQL or Power BI in both documents and lists the ones your resume is missing.</p></div>
       <div class="feat"><span class="ic2" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span><h3>Keyword overlap</h3><p>TF-IDF measures how many of the job’s important words also appear in your resume.</p></div>
-      <div class="feat"><span class="ic2" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-3 11.2V17h6v-2.8A6 6 0 0 0 12 3z"/><path d="M9 21h6"/></svg></span><h3>Meaning overlap</h3><p>A sentence-embedding model compares ideas, so “built predictive models” still counts toward “machine learning”.</p></div>
+
     </div>
   </div>
 </section>
@@ -368,7 +367,9 @@ footer b{color:#fff}
     var pill=$('gpill');pill.className='pill '+lvl;pill.textContent={hi:'Strong match',mid:'Partial match',low:'Low match'}[lvl];
     $('gdesc').textContent={hi:'Your resume covers most of what this job asks for.',mid:'You have a solid base. Closing a few gaps will help.',low:'Several skills this job asks for are missing from your resume.'}[lvl];
     $('noskill').hidden=has;
-    bar('skill',skill);bar('text',text);bar('tfidf',r.tfidf_similarity);bar('sem',r.semantic_similarity);
+    bar('skill',skill);
+    bar('text',text);
+    bar('tfidf',r.tfidf_similarity);
     chips('m',r.matching_skills);chips('g',r.missing_skills);chips('e',r.extra_skills);
     var box=$('recs');box.textContent='';
     var keys=Object.keys(r.recommendations||{});

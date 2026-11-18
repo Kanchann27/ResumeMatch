@@ -85,19 +85,10 @@ def generate_pdf_report(resume_filename, results):
         styles["SectionHeading"]
     ))
 
-    semantic_score = results.get("semantic_similarity")
-
-    semantic_display = (
-        f"{semantic_score}%"
-        if semantic_score is not None
-        else "N/A (Unavailable in lightweight deployment)"
-    )
-
     score_data = [
         ["Metric", "Score"],
         ["Skill Match", f"{results.get('skill_match_percentage', 0)}%"],
         ["TF-IDF Similarity", f"{results.get('tfidf_similarity', 0)}%"],
-        ["Semantic Similarity", semantic_display],
         ["Combined Text Similarity", f"{results.get('combined_text_similarity', 0)}%"]
     ]
 

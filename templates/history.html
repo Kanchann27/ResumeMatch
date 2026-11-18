@@ -238,21 +238,7 @@
 
                     <br>
 
-                    <strong>Semantic Similarity:</strong>
-
-                    {% if record.semantic_similarity is not none %}
-
-                        {{ "%.2f"|format(record.semantic_similarity) }}%
-
-                    {% else %}
-
-                        N/A (Unavailable in lightweight deployment)
-
-                    {% endif %}
-
-                    <br>
-
-                    <strong>Combined Similarity:</strong>
+                    <strong>Text Similarity:</strong>
 
                     {{ "%.2f"|format(record.combined_similarity) }}%
 
