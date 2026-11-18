@@ -240,7 +240,15 @@
 
                     <strong>Semantic Similarity:</strong>
 
-                    {{ "%.2f"|format(record.semantic_similarity) }}%
+                    {% if record.semantic_similarity is not none %}
+
+                        {{ "%.2f"|format(record.semantic_similarity) }}%
+
+                    {% else %}
+
+                        N/A (Unavailable in lightweight deployment)
+
+                    {% endif %}
 
                     <br>
 

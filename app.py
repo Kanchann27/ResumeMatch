@@ -188,13 +188,25 @@ def analyze():
 
         # STEP 6: COMBINED SIMILARITY
 
-        combined_score = round(
-            (
-                float(tfidf_score)
-                + float(semantic_score)
-            ) / 2,
-            2
-        )
+        if semantic_score is None:
+
+            # Hosted lightweight mode: use TF-IDF only
+
+            combined_score = round(
+                float(tfidf_score), 2
+            )
+
+        else:
+
+            # Full local mode: combine both scores
+
+            combined_score = round(
+                (
+                    float(tfidf_score)
+                    + float(semantic_score)
+                ) / 2,
+                2
+            )
 
 
         # STEP 7: SKILL GAP ANALYSIS
@@ -230,8 +242,10 @@ def analyze():
                 float(tfidf_score), 2
             ),
 
-            "semantic_similarity": round(
-                float(semantic_score), 2
+            "semantic_similarity": (
+                round(float(semantic_score), 2)
+                if semantic_score is not None
+                else None
             ),
 
             "combined_text_similarity": round(

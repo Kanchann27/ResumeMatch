@@ -329,7 +329,30 @@ footer b{color:#fff}
 
   function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
   function show(msg,kind){notice.textContent=msg;notice.className='notice '+kind;notice.hidden=false}
-  function bar(id,v){$('b-'+id).style.width=Math.max(0,Math.min(v,100))+'%';$('v-'+id).textContent=v+'%'}
+  
+  function bar(id, v) {
+    var barElement = $('b-' + id);
+    var valueElement = $('v-' + id);
+
+    if (
+        v === null ||
+        v === undefined ||
+        v === '' ||
+        !Number.isFinite(Number(v))
+    ) {
+        barElement.style.width = '0%';
+        valueElement.textContent = 'N/A';
+        return;
+    }
+
+    var score = Number(v);
+
+    barElement.style.width =
+        Math.max(0, Math.min(score, 100)) + '%';
+
+    valueElement.textContent = score.toFixed(2) + '%';
+}
+
   function chips(id,arr,cid){var ul=$('l-'+id);ul.textContent='';$('c-'+id).textContent=arr.length;
     if(!arr.length){var p=el('li','empty',id==='g'?'Nothing missing.':'None found.');ul.appendChild(p);return}
     arr.slice().sort().forEach(function(s){ul.appendChild(el('li','chip',s))})}

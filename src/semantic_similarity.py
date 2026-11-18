@@ -1,11 +1,19 @@
 
+import os
+
+
 def calculate_semantic_similarity(resume_text, job_description):
+
+    # Disable the heavy model on the hosted server when configured
+    if os.environ.get("DISABLE_SEMANTIC_MODEL") == "1":
+        return None
+
     from sentence_transformers import SentenceTransformer
     from sklearn.metrics.pairwise import cosine_similarity
 
     model = SentenceTransformer(
-        'all-MiniLM-L6-v2',
-        device='cpu'
+        "all-MiniLM-L6-v2",
+        device="cpu"
     )
 
     embeddings = model.encode(
@@ -24,6 +32,7 @@ def calculate_semantic_similarity(resume_text, job_description):
 
 
 if __name__ == "__main__":
+
     resume_text = "Developed predictive models using Python."
     job_description = "Experience in machine learning algorithms."
 
@@ -32,4 +41,7 @@ if __name__ == "__main__":
         job_description
     )
 
-    print("Semantic Similarity Score:", score, "%")
+    if score is None:
+        print("Semantic Similarity: Disabled")
+    else:
+        print("Semantic Similarity Score:", score, "%")
