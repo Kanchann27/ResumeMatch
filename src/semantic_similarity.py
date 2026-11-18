@@ -1,17 +1,21 @@
 
-from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
-
-model = SentenceTransformer('all-MiniLM-L6-v2')
-
-
 def calculate_semantic_similarity(resume_text, job_description):
-    resume_embedding = model.encode(resume_text)
-    job_embedding = model.encode(job_description)
+    from sentence_transformers import SentenceTransformer
+    from sklearn.metrics.pairwise import cosine_similarity
+
+    model = SentenceTransformer(
+        'all-MiniLM-L6-v2',
+        device='cpu'
+    )
+
+    embeddings = model.encode(
+        [resume_text, job_description],
+        convert_to_numpy=True
+    )
 
     semantic_score = cosine_similarity(
-        [resume_embedding],
-        [job_embedding]
+        [embeddings[0]],
+        [embeddings[1]]
     )[0][0]
 
     semantic_percentage = semantic_score * 100
