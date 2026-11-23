@@ -17,7 +17,7 @@ ResumeMatch is successfully deployed on **Render** and is accessible through the
 
 <https://resumematch-xuxg.onrender.com>
 
-### 🚀 [Click Here to Open ResumeMatch – Live Demo](https://resumematch-xuxg.onrender.com)
+### [Click Here to Open ResumeMatch – Live Demo](https://resumematch-xuxg.onrender.com) 🚀
 
 **What you can explore:**
 - Access the ResumeMatch web application.
